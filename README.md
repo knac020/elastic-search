@@ -7,10 +7,10 @@ Kibana, is an open source analytics and visualization platform designed to work 
 
 In our case, we need filebeat and metricbeat plugins to be installed in our elastic cloud as we are getting a licence for the product. 
 
-# Requirements
+## Requirements
 Initially, to work with ELK(Elastic search, Logstash and Kibana) we need access to kuberenete. Additionally You need to have a recent version of Java installed.
 
-# Installation
+## Installing elastic cloud
 
 In elastic cloud version, already we will have access to elasticsearch and kibana. Initially elasticcloud comes with 14 days trial period, to continue later on with the product get the license. To get started use the following steps,
 
@@ -83,11 +83,19 @@ Once the file is edited, deploy the file using the following command.
 
 > kubectl create -f metricbeat-kubernetes.yaml
 
-# To check the status of the file
+### To check the status of the file
 
 > kubectl --namespace=kube-system  get ds/metricbeat
 
-# Creating index
+### Start metricbeat
+
+To start metricbeat use the following commands,
+
+> sudo chown root metricbeat.yml 
+> sudo chown root modules.d/system.yml 
+> sudo ./metricbeat -e -c metricbeat.yml -d "publish"
+
+### Creating index
 
 Once the metricbeat plugin is deployed, it is essential to create an index. 
 
@@ -102,14 +110,14 @@ Once the metricbeat plugin is deployed, it is essential to create an index.
 
 Filebeat is a log data shipper for local files. Installed as an agent on your servers, Filebeat monitors the log directories or specific log files, tails the files, and forwards them either to Elasticsearch or Logstash for indexing. 
 
-# Install Filebeat 
+### Install Filebeat 
 
 To install filebeats, use the following commands.
 
 > curl -L -O https://artifacts.elastic.co/downloads/beats/filebeat/filebeat-6.1.1-darwin-x86_64.tar.gz
 > tar xzvf filebeat-6.1.1-darwin-x86_64.tar.gz
  
- # Configure Filebeat
+ ### Configure Filebeat
     
  Open filebeat.yml from your terminal and edit the following commands,
  
@@ -118,11 +126,13 @@ To install filebeats, use the following commands.
        hosts: ["#######"]`
  2. Configure the Kibana endpoint in 'setup.kibana:'
  
- # install default dashboards
+ ### Install default dashboards
  
  To install the predefined dashboards, use the following command
  
- > ./filebeat setup --dashboards
+ > ./filebeat setup --dashboards 
+ 
+ Note: Filebeat doesnot contains any default dashboards for kubernetes, It is essential to load the dashboards only if you are using filebeat to monitor other services such as NGINX, Kafka, MySQL
  
 Download the Filebeat reference file from the following link using the curl command from your terminal
 
@@ -146,4 +156,11 @@ Once the file is edited, deploy the file using the following command.
 Check teh status of the file by running the following command.
 
 > kubectl --namespace=kube-system get ds/filebeat
+
+### Start filebeat
+
+To strart filebeat use the following commands,
+
+> sudo chown root filebeat.yml 
+> sudo ./filebeat -e -c filebeat.yml -d "publish"
 
