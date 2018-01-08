@@ -171,7 +171,7 @@ Once the file is edited, deploy the file using the following command.
 
 > kubectl create -f metricbeat-kubernetes.yaml
 
-Check teh status of the file by running the following command.
+Check the status of the file by running the following command.
 
 > kubectl --namespace=kube-system get ds/filebeat
 
