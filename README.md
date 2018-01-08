@@ -5,7 +5,7 @@ To begin with let us see in detail about elastic search and the features they ha
 
 Kibana, is an open source analytics and visualization platform designed to work with Elasticsearch. You use Kibana to search, view, and interact with data stored in Elasticsearch indices. You can easily perform advanced data analysis and visualize your data in a variety of charts, tables, and maps
 
-​In our case, we need filebeat and metricbeat plugins to be installed in our elastic cloud as we are getting a licence for the product. 
+In our case, we need filebeat and metricbeat plugins to be installed in our elastic cloud as we are getting a licence for the product. 
 
 # Requirements
 Initially, to work with ELK(Elastic search, Logstash and Kibana) we need access to kuberenete. Additionally You need to have a recent version of Java installed.
@@ -21,29 +21,129 @@ In elastic cloud version, already we will have access to elasticsearch and kiban
     * select a cluster name of your choice, and click Create.
     
  To check if your cloud is created successfully, 
-    * In the Elastic Cloud Console, go to the overview page and click the Elasticsearch endpoint URL under Endpoints.
-    * Enter the credentials if prompted
+ 
+    1. In the Elastic Cloud Console, go to the overview page and click the Elasticsearch endpoint URL under Endpoints.
+    2. Enter the credentials if prompted
  
  If you find the following message, then your cluster is successfully created.
  
- > {
- > "name" : "instance-0000000001",
- > "cluster_name" : "08bc0101dd9d0218a29c0c8feedbfa3c",
- > "cluster_uuid" : "B1Xs11KzRiujke8RTPT2cA",
- > "version" : {
- >   "number" : "6.1.1",
- >   "build_hash" : "bd92e7f",
- >   "build_date" : "2017-12-17T20:23:25.338Z",
- >   "build_snapshot" : false,
- >   "lucene_version" : "7.1.0",
- >   "minimum_wire_compatibility_version" : "5.6.0",
- >   "minimum_index_compatibility_version" : "5.0.0"
- > },
- > "tagline" : "You Know, for Search"
- > }
+ ` {
+  "name" : "instance-0000000001",
+  "cluster_name" : "08bc0101dd9d0218a29c0c8feedbfa3c",
+  "cluster_uuid" : "B1Xs11KzRiujke8RTPT2cA",
+  "version" : {
+    "number" : "6.1.1",
+    "build_hash" : "bd92e7f",
+    "build_date" : "2017-12-17T20:23:25.338Z",
+    "build_snapshot" : false,
+    "lucene_version" : "7.1.0",
+    "minimum_wire_compatibility_version" : "5.6.0",
+    "minimum_index_compatibility_version" : "5.0.0"
+ },
+ "tagline" : "You Know, for Search"
+ }`
  
+   You can check the kibana dashboard being created in the overview page, click on the kibana icon in dashboard to view the visulaisations.
+   
+# Monitor kubernetes using metricbeat
+
+## Metricbeats
+
+Metricbeat is a lightweight shipper that you can install on your servers to periodically collect metrics from the operating system and from services running on the server. Metricbeat takes the metrics and statistics that it collects and ships them to the output that you specify, such as Elasticsearch or Logstash. Here we are running metricbeats on kubernetes.
+
+### Install metricbeats on cloud
+
+To install metricbeats, use the following commands.
+
+> curl -L -O https://artifacts.elastic.co/downloads/beats/metricbeat/metricbeat-6.1.1-darwin-x86_64.tar.gz
+> tar xzvf metricbeat-6.1.1-darwin-x86_64.tar.gz
+
+Now open the metricbeat.yml file in the terminal and make the following changes,
+
+   1. In kibana section enter the corresponding kibana endpoint configuration by specifing the path in 'setup.kibana.host:'
+   2. In elastic cloud part, enter the cloud id in 'cloud.id:'
+   3. In elasticsearch output specify the output to the cloud address and provide the authentication credentials and save the file.
+   
+Download the Metricbeat reference file from the following link using the curl command from your terminal
+
+> curl -L -O https://raw.githubusercontent.com/elastic/beats/6.1/deploy/kubernetes/metricbeat-kubernetes.yaml
+
+Once the file is downloaded, open the file using vi command in the terminal and make the required chnages metricbeat-kubernetes.yaml file. Enter your corresponding credentials provided when creating the cloud.
+
+ `- name: ELASTICSEARCH_HOST
+    value: //find the host address from the elastic cloud console
+  - name: ELASTICSEARCH_PORT
+    value: "9243"
+  - name: ELASTICSEARCH_USERNAME
+    value: elastic
+  - name: ELASTICSEARCH_PASSWORD
+   value: *****`
+
+Once the file is edited, deploy the file using the following command.
+
+> kubectl create -f metricbeat-kubernetes.yaml
+
+# To check the status of the file
+
+> kubectl --namespace=kube-system  get ds/metricbeat
+
+# Creating index
+
+Once the metricbeat plugin is deployed, it is essential to create an index. 
+
+   1. Go to KIBANA dashboad, Mnagement -> Kibana -> Indexpatterns
+   2. Select create index pattern
+   3. Create index pattern name which suits the plugin such as metricbeat-*
+   4. select next step and choose @time stamp option from the menue
+   
+ Indexing is successfully done. To view the logs choose the discover option from the menue
+
+## Filebeat
+
+Filebeat is a log data shipper for local files. Installed as an agent on your servers, Filebeat monitors the log directories or specific log files, tails the files, and forwards them either to Elasticsearch or Logstash for indexing. 
+
+# Install Filebeat 
+
+To install filebeats, use the following commands.
+
+> curl -L -O https://artifacts.elastic.co/downloads/beats/filebeat/filebeat-6.1.1-darwin-x86_64.tar.gz
+> tar xzvf filebeat-6.1.1-darwin-x86_64.tar.gz
  
- 
- 
+ # Configure Filebeat
     
-  
+ Open filebeat.yml from your terminal and edit the following commands,
+ 
+ 1. Since you are sending output directly to Elasticsearch(cloud version and not using Logstash), set the IP address and port where Filebeat can find the Elasticsearch installation. 
+      ` output.elasticsearch:
+       hosts: ["#######"]`
+ 2. Configure the Kibana endpoint in 'setup.kibana:'
+ 
+ # install default dashboards
+ 
+ To install the predefined dashboards, use the following command
+ 
+ > ./filebeat setup --dashboards
+ 
+Download the Filebeat reference file from the following link using the curl command from your terminal
+
+> curl -L -O https://raw.githubusercontent.com/elastic/beats/6.1/deploy/kubernetes/filebeat-kubernetes.yaml
+
+Once the file is downloaded, open the file using vi command in the terminal and make the required chnages filebeat-kubernetes.yaml file. Enter your corresponding credentials provided when creating the cloud.
+
+ `- name: ELASTICSEARCH_HOST
+    value: //find the host address from the elastic cloud console
+  - name: ELASTICSEARCH_PORT
+    value: "9243"
+  - name: ELASTICSEARCH_USERNAME
+    value: elastic
+  - name: ELASTICSEARCH_PASSWORD
+   value: *****`
+   
+Once the file is edited, deploy the file using the following command.
+
+> kubectl create -f metricbeat-kubernetes.yaml
+
+Check teh status of the file by running the following command.
+
+> kubectl --namespace=kube-system get ds/filebeat
+
