@@ -90,10 +90,9 @@ Once the file is edited, deploy the file using the following command.
 ### Start metricbeat
 
 To start metricbeat use the following commands,
-
-> sudo chown root metricbeat.yml 
-> sudo chown root modules.d/system.yml 
-> sudo ./metricbeat -e -c metricbeat.yml -d "publish"
+   1. sudo chown root metricbeat.yml 
+   2. sudo chown root modules.d/system.yml 
+   3. sudo ./metricbeat -e -c metricbeat.yml -d "publish"
 
 ### Creating index
 
@@ -161,6 +160,6 @@ Check teh status of the file by running the following command.
 
 To strart filebeat use the following commands,
 
-> sudo chown root filebeat.yml 
-> sudo ./filebeat -e -c filebeat.yml -d "publish"
+   1. sudo chown root filebeat.yml 
+   2. sudo ./filebeat -e -c filebeat.yml -d "publish"
 
