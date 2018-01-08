@@ -1,14 +1,33 @@
 # elastic-search
+
 This guide provides information about installing and upgrading when you are using more than one Elastic Stack product. It specifies the recommended order of installation and the steps you need to take to prepare for a stack upgrade
 
 To begin with let us see in detail about elastic search and the features they have. Elasticsearch is a highly scalable open-source full-text search and analytics engine. It allows you to store, search, and analyze big volumes of data quickly and in near real time. It is generally used as the underlying engine/technology that powers applications that have complex search features and requirements. 
 
 Kibana, is an open source analytics and visualization platform designed to work with Elasticsearch. You use Kibana to search, view, and interact with data stored in Elasticsearch indices. You can easily perform advanced data analysis and visualize your data in a variety of charts, tables, and maps
 
-In our case, we need filebeat and metricbeat plugins to be installed in our elastic cloud as we are getting a licence for the product. 
+## Concepts to understand
+
+Elastic search is similar to SQL. For a simple understanding I just compared few basic concepts of SQL with elastic search.
+
+               |  Elastic search    |         SQL      |
+               | :-----------------:|:----------------:|
+               |    Index           |     Database     |
+               |    Mapping         |     Schema       |
+               |    Document type   |     Table        |
+               |    Document        |     Row          |
+
+   * Elasticsearch is a near real time search platform. What this means is there is a slight latency (normally one second) from the time you index a document until the time it becomes searchable.
+   * A cluster is a collection of one or more nodes (servers) that together holds your entire data and provides federated indexing and search capabilities across all nodes. 
+   * A node is a single server that is part of your cluster, stores your data, and participates in the cluster’s indexing and search capabilities.
+   * An index is a collection of documents that have somewhat similar characteristics.
+   * A document is a basic unit of information that can be indexed. 
+   * Shards subdivide your index into multiple pieces.
+            
+Elastic search provides multiplr plugins for several purposes. In our case, we need filebeat and metricbeat plugins to be installed in our elastic cloud as we are getting a licence for the product. 
 
 ## Requirements
-Initially, to work with ELK(Elastic search, Logstash and Kibana) we need access to kuberenete. Additionally You need to have a recent version of Java installed.
+Initially, to work with ELK(Elastic search, Logstash and Kibana) we need access to kuberenete. Additionally You need to have a recent version of Java installed. Sometimes ELK works well only with java version 8.
 
 ## Installing elastic cloud
 
@@ -137,7 +156,7 @@ Download the Filebeat reference file from the following link using the curl comm
 
 > curl -L -O https://raw.githubusercontent.com/elastic/beats/6.1/deploy/kubernetes/filebeat-kubernetes.yaml
 
-Once the file is downloaded, open the file using vi command in the terminal and make the required chnages filebeat-kubernetes.yaml file. Enter your corresponding credentials provided when creating the cloud.
+Once the file is downloaded, open the file using vi command in the terminal and make the required changes filebeat-kubernetes.yaml file. Enter your corresponding credentials provided when creating the cloud.
 
  `- name: ELASTICSEARCH_HOST
     value: //find the host address from the elastic cloud console
